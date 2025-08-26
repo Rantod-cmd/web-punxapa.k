@@ -1,51 +1,103 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>สุขสันต์วันเกิดไบรท์ 🎂💗</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>เป่าเค้กวันเกิด 🎂</title>
   <style>
-    body { text-align: center; font-family: sans-serif; background: pink; margin: 0; padding: 40px 16px; }
-    h1 { color: #ff4081; }
-    .candle { font-size: 80px; color: orange; }
-    .hidden { visibility: hidden; }
-    button { padding: 10px 20px; font-size: 18px; background: #ff4081; color: #fff;
-             border: none; border-radius: 8px; cursor: pointer; }
+    body {
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background:#fff7fb; font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Thai',sans-serif;
+      color:#222; padding:24px;
+    }
+    .card { width:min(680px,100%); background:#fff; border-radius:20px; padding:28px 22px 32px; text-align:center;
+            box-shadow:0 10px 30px rgba(0,0,0,.08); }
+    h1 { margin:6px 0 8px; font-size:clamp(22px,5vw,34px); color:#ff4fa0; }
+    p.lead { margin:0 0 14px; color:#666; }
+    .cake-wrap { margin:14px auto 10px; }
+    .cake { width:280px; max-width:80vw; margin:0 auto; position:relative; }
+    .plate { width:100%; height:16px; background:#e7e7e7; border-radius:12px; }
+    .body { width:100%; height:120px; background:linear-gradient(#ffd4df,#ffc3d3);
+            border-radius:14px 14px 6px 6px; position:relative; overflow:hidden; border:2px solid #ffacc4; }
+    .stripe { position:absolute; left:0; right:0; height:14px; background:rgba(255,255,255,.6); }
+    .stripe:nth-child(1){top:20px;} .stripe:nth-child(2){top:50px;} .stripe:nth-child(3){top:80px;}
+    .top { width:90%; height:24px; background:#fff; margin:-8px auto 0; border-radius:50% 50% 8px 8px; border:2px solid #ffd1e0; }
+    .candles { display:flex; gap:18px; justify-content:center; margin-top:-16px; }
+    .candle { width:24px; height:58px; background:repeating-linear-gradient(45deg,#ffd35a 0 8px,#ff9b4a 8px 16px);
+              border-radius:6px; position:relative; border:1.5px solid #d57f34; }
+    .wick { width:2.5px; height:10px; background:#333; position:absolute; top:-10px; left:50%; transform:translateX(-50%); border-radius:1px; }
+    .flame { width:18px; height:26px; background:radial-gradient(ellipse at center,#fff6a7 10%,#ffd66e 60%,#ff9a3d 100%);
+             position:absolute; top:-32px; left:50%; transform:translateX(-50%) scale(1);
+             border-radius:50%; filter:drop-shadow(0 0 14px rgba(255,170,0,.7));
+             animation:flicker .13s infinite alternate; }
+    @keyframes flicker {
+      from{transform:translateX(-50%) scale(1) rotate(-1deg); opacity:.95;}
+      to{transform:translateX(-50%) scale(1.05) rotate(1deg); opacity:1;}
+    }
+    .flame.off { display:none; }
+    .actions { margin:16px 0 8px; }
+    button {
+      border:0; border-radius:999px; padding:10px 16px; cursor:pointer; font-weight:600;
+      background:#ff4fa0; color:white; box-shadow:0 6px 16px rgba(255,79,160,.35);
+    }
+    .status { margin-top:8px; font-weight:600; }
+    footer { margin-top:18px; color:#666; font-size:.9rem; }
   </style>
 </head>
 <body>
+  <main class="card" aria-live="polite">
+    <h1>สุขสันต์วันเกิดไบรท์🎂💗</h1>
+    <p class="lead">ขอให้มีความสุขในทุกวัน อธิษฐานแล้วกดปุ่มเลยย👆🏻</p>
+
+    <section class="cake-wrap">
+      <div class="cake" role="img" aria-label="Birthday cake with candles" id="cake">
+        <div class="top"></div>
+        <div class="candles" id="candles">
+          <div class="candle"><div class="wick"></div><div class="flame"></div></div>
+          <div class="candle"><div class="wick"></div><div class="flame"></div></div>
+          <div class="candle"><div class="wick"></div><div class="flame"></div></div>
+          <div class="candle"><div class="wick"></div><div class="flame"></div></div>
+          <div class="candle"><div class="wick"></div><div class="flame"></div></div>
+        </div>
+        <div class="body">
+          <div class="stripe"></div><div class="stripe"></div><div class="stripe"></div>
+        </div>
+        <div class="plate"></div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="clickBlow">เป่าเทียน 🎉</button>
+      <button id="reset">จุดเทียนใหม่</button>
+    </div>
+
+    <div class="status" id="status">สถานะ: รอกดปุ่ม… 👆🏻</div>
+    <footer>ไว้ไปกินข้าวด้วยกันนะ✨</footer>
+  </main>
+
   <script>
-    function blow() {
-      document.querySelectorAll('.candle').forEach(c => c.classList.add('hidden'));
-      document.getElementById("msg").textContent = "เทียนดับแล้ว ขอให้เป็นการเริ่มต้นที่ดีของไบรท์นะ 🎂";
+    const clickBlowBtn = document.getElementById('clickBlow');
+    const resetBtn = document.getElementById('reset');
+    const statusEl = document.getElementById('status');
+    const flames = Array.from(document.querySelectorAll('.flame'));
+    let extinguished = false;
 
-      // เล่นเพลงหลังผู้ใช้กดปุ่ม (กันเบราว์เซอร์บล็อก autoplay)
-      const bgm = document.getElementById("bgm");
-      if (bgm) {
-        bgm.muted = false;
-        bgm.play().catch(() => {});
-      }
+    function setStatus(msg){ statusEl.textContent = 'สถานะ: ' + msg; }
+
+    function allOff(){
+      flames.forEach(f => f.classList.add('off'));
+      extinguished = true;
+      setStatus('เทียนดับแล้ว ขอให้เป็นการเริ่มต้นที่ดีของไบรท์นะ 🎂');
     }
+    function allOn(){
+      flames.forEach(f => f.classList.remove('off'));
+      extinguished = false;
+      setStatus('รอกดปุ่ม… 👆🏻');
+    }
+
+    clickBlowBtn.addEventListener('click', allOff);
+    document.getElementById('cake').addEventListener('click', () => extinguished ? allOn() : allOff());
+    resetBtn.addEventListener('click', allOn);
   </script>
-
-  <h1>สุขสันต์วันเกิดไบรท์ 🎂💗</h1>
-  <p>ขอให้มีความสุขในทุกวัน อธิษฐานแล้วกดปุ่มเลยย👆🏻</p>
-
-  <div id="candles">
-    <span class="candle">🕯️</span>
-    <span class="candle">🕯️</span>
-    <span class="candle">🕯️</span>
-  </div>
-
-  <p><button type="button" onclick="blow()">เป่าเทียน 🎉</button></p>
-
-  <h2 id="msg"></h2>
-
-  <!-- เพลง Happy Birthday -->
-  <audio id="bgm" autoplay loop muted>
-    <source src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mp3" type="audio/mpeg" />
-  </audio>
-
-  <footer style="margin-top:20px; color:#555;">ไว้ไปกินข้าวด้วยกัน✨</footer>
 </body>
 </html>
